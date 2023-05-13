@@ -1,5 +1,7 @@
 const { Activity } = require('./Activity');
+const { Member } = require('./Member');
 
 module.exports = {
-    Activity
+    Activity,
+    Member
 }

@@ -5,6 +5,7 @@ require('dotenv').config()
 const mongoose = require("mongoose");
 
 const { Activity } = require("./models");
+const { Member } = require("./models");
 
 const app = express();
 app.use(bodyParser.json());
@@ -54,10 +55,33 @@ app.post('/api/activity', async (req, res) => {
     }
 });
 
+app.post('/api/member', async (req, res) => {
+    const {username , email , password} = req.body
+    try {
+        const newMember = new Member({
+            username,
+            email,
+            password
+        });
+        const insertedMember = await newMember.save();
+        console.log('insertedMember: ', insertedMember);
+        return res.status(201).json(insertedMember);
+    } catch (error) {
+        return res.status(404).json({ message: error.message });
+    }
+});
+
 app.get("/api/activity", async (req, res) => {
-    const allActivity = await Activity.find();
+    const data = await Activity.find();
     return res.status(200).json({
-        data: allActivity
+        data
+    });
+});
+
+app.get("/api/member", async (req, res) => {
+    const dataMember = await Member.find();
+    return res.status(200).json({
+        dataMember
     });
 });
 
