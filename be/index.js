@@ -10,6 +10,26 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Add headers before the routes are defined
+app.use(function (req, res, next) {
+
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+    next();
+});
+
 app.post('/api/activity', async (req, res) => {
     const { activityType, title } = req.body;
     const dateTime = req.body.dateTime;
@@ -17,17 +37,21 @@ app.post('/api/activity', async (req, res) => {
     const distance = req.body.distance;
     const description = req.body.description;
 
-    const newActivity = new Activity({
-        activityType: activityType,
-        title: title,
-        dateTime: dateTime,
-        duration: duration,
-        distance: distance,
-        description: description
-    });
-    const insertedActivity = await newActivity.save();
-    console.log('insertedActivity: ', insertedActivity)
-    return res.status(201).json(insertedActivity);
+    try {
+        const newActivity = new Activity({
+            activityType: activityType,
+            title: title,
+            dateTime: dateTime,
+            duration: duration,
+            distance: distance,
+            description: description
+        });
+        const insertedActivity = await newActivity.save();
+        console.log('insertedActivity: ', insertedActivity)
+        return res.status(201).json(insertedActivity);
+    } catch (error) {
+        return res.status(404).json({ message: error.message });
+    }
 });
 
 app.get("/api/activity", async (req, res) => {
@@ -40,7 +64,7 @@ app.get("/api/activity", async (req, res) => {
 const start = async () => {
     try {
         const { DB_HOST, DB_USERNAME, DB_PASSWORD } = process.env
-        await mongoose.connect("mongodb+srv://"+DB_USERNAME+":"+DB_PASSWORD+"@"+DB_HOST+"/?retryWrites=true&w=majority");
+        await mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/?retryWrites=true&w=majority`);
         const port = process.env.PORT || 8080;
         app.listen(port, () => {
             console.log(`Server is running on port ${port}.`);
