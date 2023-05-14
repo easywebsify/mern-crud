@@ -28,7 +28,14 @@ const ActivityList = () => {
           <h1>Create List</h1>
           {
             activity.map((item) => {
-                return <div key={item._id}>{item._id} {item.activityType} {item.duration}</div>
+              return <div key={item._id}>
+                        <p>Activity type : {item.activityType}</p> 
+                        <p>Title : {item.title}</p> 
+                        <p>Date : {item.dateTime}</p>
+                        <p>Duration : {item.duration}</p>
+                        <p>Description : {item.description}</p>  
+                        <hr />
+                      </div>
             })
           }
         </div>
