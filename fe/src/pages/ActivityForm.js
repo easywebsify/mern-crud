@@ -25,14 +25,12 @@ const ActivityForm = () => {
             headers: {  'Content-Type': 'application/json' },
             data : data
         };
-        try {
-            axios(config)
-            .then((response) => {
-                console.log(response.data)
-            });
-        } catch (error) {
-            console.log(error);
-        }
+        axios(config)
+        .then((response) => {
+            console.log(response.data)
+        }).catch(error => {
+          console.log(error);
+        });
     }
 
     const handleCreateActivity = (e) => {

@@ -10,14 +10,12 @@ const ActivityList = () => {
             url: `${conf.serverUrl}/api/activity`,
             headers: { }
         };
-        try {
-            axios(config)
-            .then((response) => {
-                setActivity(response.data.data)
-            });
-        } catch (error) {
-            console.log(error);
-        }
+        axios(config)
+        .then((response) => {
+            setActivity(response.data.data)
+        }).catch(error => {
+          console.log(error);
+        });
     }
     
     useEffect(() => {
