@@ -1,10 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const firebaseAdmin = require('firebase-admin/app');
+const { getAuth } = require("firebase-admin/auth");
 
 require('dotenv').config()
 const mongoose = require("mongoose");
 
+const firebaseSecretConfig = require("./firebase-secret-config.json");
+
 const { Activity } = require("./models");
+
+firebaseAdmin.initializeApp({
+    credential: firebaseAdmin.cert(firebaseSecretConfig)
+});
 
 const app = express();
 app.use(bodyParser.json());
@@ -30,7 +38,39 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.post('/api/activity', async (req, res) => {
+const appCheckVerification = async (req, res, next) => {
+    const appAccessToken = req.header('x-access-token');
+    if (!appAccessToken) {
+        res.status(401);
+        return next('Unauthorized');
+    }
+    try {
+        const decoded = await getAuth()
+            .verifyIdToken(appAccessToken)
+            .then((decodedToken) => {
+                console.log('decodedToken', decodedToken)
+                return decodedToken;
+            });
+        console.log('decoded', decoded)
+        req.header['x-user-id'] = decoded.user_id
+        req.header['x-user-email'] = decoded.email
+        return next();
+    } catch (err) {
+        console.log('err', err)
+        res.status(401);
+        return next('Unauthorized..');
+    }
+}
+
+app.post('/api/activity',[appCheckVerification], async (req, res) => {
+    
+    const userId = req.header['x-user-id']; 
+    const userEmail = req.header['x-user-email'];
+
+    console.log('userId', userId);
+    console.log('userEmail', userEmail)
+    // Todo Add userId and email with activty
+
     const { activityType, title } = req.body;
     const dateTime = req.body.dateTime;
     const duration = req.body.duration;
@@ -54,7 +94,15 @@ app.post('/api/activity', async (req, res) => {
     }
 });
 
-app.get("/api/activity", async (req, res) => {
+app.get("/api/activity",[appCheckVerification], async (req, res) => {
+    // Get user from header
+    const userId = req.header['x-user-id']; 
+    const userEmail = req.header['x-user-email'];
+
+    console.log('userId', userId);
+    console.log('userEmail', userEmail)
+    // Todo get activity by userId 
+
     const allActivity = await Activity.find();
     return res.status(200).json({
         data: allActivity
